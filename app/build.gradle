@@ -12,14 +12,63 @@ android {
         applicationId "com.dares"
         minSdkVersion 21
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        flavorDimensions "default"
+    }
+    signingConfigs {
+        def taskName = project.gradle.startParameter.taskNames.toString()
+        def keyFile
+        if (taskName.contains("Release")) {
+            keyFile = "release_key.properties"
+        } else {
+            keyFile = "debug_key.properties"
+        }
+        def key = new Properties()
+        try {
+            key.load(file("$project.rootDir/keys/" + keyFile).newReader())
+        } catch (IOException ignored) {
+            throw new GradleException("Key file not found. " +
+                "To obtain it, please contact with project owner and add key file to [$project.rootDir/keys].")
+        }
+
+        debug {
+            keyAlias key['ALIAS']
+            keyPassword key['PASSWORD']
+            storePassword key['PASSWORD']
+            storeFile file('../keys/dares_debug.jks')
+
+        }
+        release {
+            keyAlias key['ALIAS']
+            keyPassword key['PASSWORD']
+            storePassword key['PASSWORD']
+            storeFile file('../keys/dares_release.jks')
+        }
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), "$project.rootDir/tools/proguard-rules.pro"
+            signingConfig signingConfigs.release
+        }
+        debug {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), "$project.rootDir/tools/proguard-rules-debug.pro"
+            signingConfig signingConfigs.debug
+        }
+    }
+    productFlavors {
+        dev {
+            signingConfig signingConfigs.debug
+            versionCode gitVersionCodeTime
+            versionName gitVersionName
+            applicationId "com.dares.dev"
+        }
+        prod {
+            signingConfig signingConfigs.release
+            versionCode gitVersionCode
+            versionName gitVersionName
+            applicationId "com.dares"
         }
     }
 }

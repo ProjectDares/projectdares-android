@@ -240,3 +240,5 @@ cmake-build-debug/
 
 
 # End of https://www.gitignore.io/api/kotlin,android,intellij,androidstudio
+
+keys/release_key.properties
