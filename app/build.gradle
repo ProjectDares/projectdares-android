@@ -6,79 +6,80 @@ apply plugin: 'kotlin-android-extensions'
 
 apply from: "$project.rootDir/tools/script-git-version.gradle"
 
+apply from: "$project.rootDir/tools/script-lint.gradle"
+
 android {
-    compileSdkVersion 27
-    defaultConfig {
-        applicationId "com.dares"
-        minSdkVersion 21
-        targetSdkVersion 27
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        flavorDimensions "default"
+  compileSdkVersion 27
+  defaultConfig {
+    applicationId "com.dares"
+    minSdkVersion 21
+    targetSdkVersion 27
+    testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    flavorDimensions "default"
+  }
+  signingConfigs {
+    def taskName = project.gradle.startParameter.taskNames.toString()
+    def keyFile
+    if (taskName.contains("Release")) {
+      keyFile = "release_key.properties"
+    } else {
+      keyFile = "debug_key.properties"
     }
-    signingConfigs {
-        def taskName = project.gradle.startParameter.taskNames.toString()
-        def keyFile
-        if (taskName.contains("Release")) {
-            keyFile = "release_key.properties"
-        } else {
-            keyFile = "debug_key.properties"
-        }
-        def key = new Properties()
-        try {
-            key.load(file("$project.rootDir/keys/" + keyFile).newReader())
-        } catch (IOException ignored) {
-            throw new GradleException("Key file not found. " +
-                "To obtain it, please contact with project owner and add key file to [$project.rootDir/keys].")
-        }
+    def key = new Properties()
+    try {
+      key.load(file("$project.rootDir/keys/" + keyFile).newReader())
+    } catch (IOException ignored) {
+      throw new GradleException(
+          "Key file not found. " + "To obtain it, please contact with project owner and add key file to [$project.rootDir/keys].")
+    }
 
-        debug {
-            keyAlias key['ALIAS']
-            keyPassword key['PASSWORD']
-            storePassword key['PASSWORD']
-            storeFile file('../keys/dares_debug.jks')
-
-        }
-        release {
-            keyAlias key['ALIAS']
-            keyPassword key['PASSWORD']
-            storePassword key['PASSWORD']
-            storeFile file('../keys/dares_release.jks')
-        }
+    debug {
+      keyAlias key['ALIAS']
+      keyPassword key['PASSWORD']
+      storePassword key['PASSWORD']
+      storeFile file('../keys/dares_debug.jks')
     }
-    buildTypes {
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), "$project.rootDir/tools/proguard-rules.pro"
-            signingConfig signingConfigs.release
-        }
-        debug {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), "$project.rootDir/tools/proguard-rules-debug.pro"
-            signingConfig signingConfigs.debug
-        }
+    release {
+      keyAlias key['ALIAS']
+      keyPassword key['PASSWORD']
+      storePassword key['PASSWORD']
+      storeFile file('../keys/dares_release.jks')
     }
-    productFlavors {
-        dev {
-            signingConfig signingConfigs.debug
-            versionCode gitVersionCodeTime
-            versionName gitVersionName
-            applicationId "com.dares.dev"
-        }
-        prod {
-            signingConfig signingConfigs.release
-            versionCode gitVersionCode
-            versionName gitVersionName
-            applicationId "com.dares"
-        }
+  }
+  buildTypes {
+    release {
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), "$project.rootDir/tools/proguard-rules.pro"
+      signingConfig signingConfigs.release
     }
+    debug {
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), "$project.rootDir/tools/proguard-rules-debug.pro"
+      signingConfig signingConfigs.debug
+    }
+  }
+  productFlavors {
+    dev {
+      signingConfig signingConfigs.debug
+      versionCode gitVersionCodeTime
+      versionName gitVersionName
+      applicationId "com.dares.dev"
+    }
+    prod {
+      signingConfig signingConfigs.release
+      versionCode gitVersionCode
+      versionName gitVersionName
+      applicationId "com.dares"
+    }
+  }
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation"org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    implementation 'com.android.support:appcompat-v7:27.1.1'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.1'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+  implementation 'com.android.support:appcompat-v7:27.1.1'
+  implementation 'com.android.support.constraint:constraint-layout:1.1.1'
+  testImplementation 'junit:junit:4.12'
+  androidTestImplementation 'com.android.support.test:runner:1.0.2'
+  androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
